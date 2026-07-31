@@ -60,8 +60,6 @@ Current release info
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-groundingdino--py-green.svg)](https://anaconda.org/conda-forge/groundingdino-py) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/groundingdino-py.svg)](https://anaconda.org/conda-forge/groundingdino-py) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/groundingdino-py.svg)](https://anaconda.org/conda-forge/groundingdino-py) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/groundingdino-py.svg)](https://anaconda.org/conda-forge/groundingdino-py) |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-groundingdino--py--base-green.svg)](https://anaconda.org/conda-forge/groundingdino-py-base) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/groundingdino-py-base.svg)](https://anaconda.org/conda-forge/groundingdino-py-base) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/groundingdino-py-base.svg)](https://anaconda.org/conda-forge/groundingdino-py-base) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/groundingdino-py-base.svg)](https://anaconda.org/conda-forge/groundingdino-py-base) |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-groundingdino--py--cpu-green.svg)](https://anaconda.org/conda-forge/groundingdino-py-cpu) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/groundingdino-py-cpu.svg)](https://anaconda.org/conda-forge/groundingdino-py-cpu) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/groundingdino-py-cpu.svg)](https://anaconda.org/conda-forge/groundingdino-py-cpu) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/groundingdino-py-cpu.svg)](https://anaconda.org/conda-forge/groundingdino-py-cpu) |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-groundingdino--py--cuda-green.svg)](https://anaconda.org/conda-forge/groundingdino-py-cuda) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/groundingdino-py-cuda.svg)](https://anaconda.org/conda-forge/groundingdino-py-cuda) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/groundingdino-py-cuda.svg)](https://anaconda.org/conda-forge/groundingdino-py-cuda) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/groundingdino-py-cuda.svg)](https://anaconda.org/conda-forge/groundingdino-py-cuda) |
 
 Installing groundingdino-py
@@ -74,16 +72,16 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `groundingdino-py, groundingdino-py-base, groundingdino-py-cpu, groundingdino-py-cuda` can be installed with `conda`:
+Once the `conda-forge` channel has been enabled, `groundingdino-py, groundingdino-py-cuda` can be installed with `conda`:
 
 ```
-conda install groundingdino-py groundingdino-py-base groundingdino-py-cpu groundingdino-py-cuda
+conda install groundingdino-py groundingdino-py-cuda
 ```
 
 or with `mamba`:
 
 ```
-mamba install groundingdino-py groundingdino-py-base groundingdino-py-cpu groundingdino-py-cuda
+mamba install groundingdino-py groundingdino-py-cuda
 ```
 
 It is possible to list all of the versions of `groundingdino-py` available on your platform with `conda`:

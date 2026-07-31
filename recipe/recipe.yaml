@@ -55,6 +55,9 @@ source:
     #   0001  IDEA-Research/GroundingDINO#458  transformers >= 4.49 compatibility
     #   0002  IDEA-Research/GroundingDINO#459  cuda_fp16.h include, fixes CUDA 12
     #   0003  IDEA-Research/GroundingDINO#460  __version__ attribute
+    #   0004  IDEA-Research/GroundingDINO#462  Tensor::type() is deprecated and
+    #                                          no longer converts, so the kernel
+    #                                          does not compile under CUDA 12.9
     #
     # IDEA-Research/GroundingDINO#461 is deliberately *not* carried.  It extends
     # the SwinB config with training parameters, which is a proposal rather than
@@ -64,6 +67,7 @@ source:
       - patches/0001-transformers-api-compat.patch
       - patches/0002-cuda-fp16-include.patch
       - patches/0003-version-attribute.patch
+      - patches/0004-aten-deprecated-type.patch
 
 build:
   # The recipe-wide build number.  Each output may override it; none do, so
