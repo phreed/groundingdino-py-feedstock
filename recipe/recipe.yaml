@@ -59,6 +59,12 @@ source:
       - patches/0002-cuda-fp16-include.patch
       - patches/0003-version-attribute.patch
 
+build:
+  # The recipe-wide build number.  Each output may override it; none do, so
+  # bumping here bumps all of them together, which is what a rebuild against new
+  # pinnings wants.
+  number: 0
+
 outputs:
 
   # ── Pure Python ─────────────────────────────────────────────────────────────
@@ -232,6 +238,14 @@ outputs:
     requirements:
       run:
         - ${{ pin_subpackage("groundingdino-py-base", exact=False) }}
+
+    tests:
+      # A metapackage's contract is what installing it pulls in, so the test that
+      # matters is that the name still gets you an importable detector.
+      - python:
+          imports:
+            - groundingdino
+          python_version: ${{ python_min }}.*
 
 about:
   homepage: https://github.com/IDEA-Research/GroundingDINO
