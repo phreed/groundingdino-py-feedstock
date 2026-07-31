@@ -2,18 +2,24 @@ schema_version: 1
 
 # GroundingDINO, built as a multi-output recipe for rattler-build.
 #
-# The package splits along one axis that actually exists in the source: whether
-# the `groundingdino._C` deformable-attention extension is compiled.
+# The package splits along the one axis that actually exists in the source:
+# whether the `groundingdino._C` deformable-attention extension is compiled.
 #
-#   groundingdino-py-base   pure Python, no extension.  Imports fine everywhere;
-#                           ms_deform_attn.py guards `from groundingdino import _C`
-#                           in a try/except and falls back to
-#                           multi_scale_deformable_attn_pytorch.
-#   groundingdino-py-cuda   the base plus the CUDA-compiled `_C`.
-#   groundingdino-py-cpu    the base plus a run-time constraint recording that no
-#                           extension is present.
-#   groundingdino-py        umbrella; resolves to the CPU build unless a CUDA
-#                           driver is detected.
+#   groundingdino-py        the package.  Pure Python, no extension.  Imports
+#                           fine everywhere; ms_deform_attn.py guards
+#                           `from groundingdino import _C` in a try/except and
+#                           falls back to multi_scale_deformable_attn_pytorch.
+#   groundingdino-py-cuda   the CUDA-compiled `_C` alone, one file, depending on
+#                           the package above.
+#
+# Two outputs, not four.  An earlier draft had a `-base` holding the Python with
+# `groundingdino-py` an empty metapackage in front of it, plus a `-cpu`
+# metapackage differing from that only by a constraint keeping `-cuda` out.
+#
+# Neither earned its place.  The indirection bought nothing that naming the
+# Python package `groundingdino-py` does not, and `-cpu` guarded against
+# something that cannot happen by accident: `-cuda` is opt-in, so nothing pulls
+# it in unasked.  Not installing it is how you do not install it.
 #
 # There is deliberately no rocm or vulkan output.  See the note at the foot of
 # this file: neither backend exists in the source to build against.
@@ -71,7 +77,7 @@ outputs:
   # Everything except the compiled extension.  `noarch: python` is correct here
   # precisely because the arch-dependent part is factored into the cuda output.
   - package:
-      name: groundingdino-py-base
+      name: ${{ name }}
       version: ${{ version }}
 
     build:
@@ -192,7 +198,7 @@ outputs:
         - libcurand-dev
       run:
         - python
-        - ${{ pin_subpackage("groundingdino-py-base", exact=False) }}
+        - ${{ pin_subpackage(name, exact=False) }}
         - pytorch >=2.1.0 *cuda*
       run_constraints:
         - __cuda >=12.0
@@ -202,54 +208,6 @@ outputs:
           # An import test would need a GPU; checking the object exists and
           # carries its entry points does not.
           - python -c "import groundingdino, pathlib, glob, sys; p = pathlib.Path(groundingdino.__file__).parent; assert glob.glob(str(p / '_C*.so')), 'the compiled extension is missing'"
-
-  # ── CPU ─────────────────────────────────────────────────────────────────────
-  # A metapackage.  It exists so that an environment can *state* that it wants
-  # the extension-free build, rather than getting it by accident.
-  - package:
-      name: groundingdino-py-cpu
-      version: ${{ version }}
-
-    build:
-      noarch: generic
-      number: 0
-      string: cpu_${{ build_number }}
-
-    requirements:
-      run:
-        - ${{ pin_subpackage("groundingdino-py-base", exact=False) }}
-      run_constraints:
-        # Installing both would put an extension into an environment that asked
-        # not to have one.
-        - groundingdino-py-cuda <0.0a0
-
-    tests:
-      - python:
-          imports:
-            - groundingdino
-          python_version: ${{ python_min }}.*
-
-  # ── Umbrella ────────────────────────────────────────────────────────────────
-  # Keeps `conda install groundingdino-py` meaning something after the split.
-  - package:
-      name: ${{ name }}
-      version: ${{ version }}
-
-    build:
-      noarch: generic
-      number: 0
-
-    requirements:
-      run:
-        - ${{ pin_subpackage("groundingdino-py-base", exact=False) }}
-
-    tests:
-      # A metapackage's contract is what installing it pulls in, so the test that
-      # matters is that the name still gets you an importable detector.
-      - python:
-          imports:
-            - groundingdino
-          python_version: ${{ python_min }}.*
 
 about:
   homepage: https://github.com/IDEA-Research/GroundingDINO
