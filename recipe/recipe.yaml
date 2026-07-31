@@ -23,9 +23,15 @@ context:
   version: "0.4.1"
   # Built from the updated GroundingDINO rather than the PyPI sdist, which is
   # the whole point of the split: the fixes land upstream, then the feedstock
-  # builds them.  Point `rev` at a tag once the pull requests are merged.
-  git_url: https://github.com/IDEA-Research/GroundingDINO.git
-  git_rev: main
+  # builds them.
+  #
+  # Pinned to the fork's integration branch, which merges the four fixes this
+  # project contributed, because they have not been merged upstream yet.
+  # Building IDEA-Research/main today would package a detector without them --
+  # the exact thing this feedstock exists to stop happening.  Repoint at an
+  # upstream tag once the pull requests land.
+  git_url: https://github.com/phreed/GroundingDINO.git
+  git_rev: integration/split-fixes
   # Architectures the extension is compiled for ahead of time.  conda-forge's
   # builders have no GPU, so nothing may depend on torch.cuda.is_available().
   cuda_arch_list: "8.0;8.6;8.9"
@@ -64,6 +70,11 @@ outputs:
         - pip
         - setuptools
         - wheel
+        # setup.py does `import torch` at module level -- and, failing that,
+        # tries to pip-install it, which cannot work in a sandboxed build.  It
+        # is needed to read the metadata even though this output compiles
+        # nothing.
+        - pytorch >=2.1.0
       run:
         - python >=${{ python_min }}
         - pytorch >=2.1.0
@@ -104,17 +115,27 @@ outputs:
         - match(python, "<3.10")
       script:
         content:
+          # CUDA_HOME has to be exported from the script rather than declared in
+          # `env:` below, because only here does $BUILD_PREFIX expand.  It must
+          # point at the prefix holding bin/nvcc: torch resolves its own
+          # CUDA_HOME from this and silently falls back to a no-extension build
+          # when it cannot find the compiler, which produces a py3-none-any
+          # wheel rather than an error.
+          - export CUDA_HOME="${BUILD_PREFIX}"
+          - echo "CUDA_HOME=$CUDA_HOME"
+          - ls -l "$CUDA_HOME/bin/nvcc"
+          - python -c "import torch; print('torch', torch.__version__, 'built against CUDA', torch.version.cuda)"
+          - python -c "from torch.utils.cpp_extension import CUDA_HOME; print('torch sees CUDA_HOME:', CUDA_HOME); assert CUDA_HOME, 'torch found no CUDA toolkit'"
           - python -m pip install . --no-deps --no-build-isolation -vv
           # Keep the extension, discard the Python that groundingdino-py-base
           # already owns.  Without this the two outputs collide on every .py.
-          - python "$RECIPE_DIR/prune_to_extension.py" "$SP_DIR/groundingdino"
+          - python "$RECIPE_DIR/prune_to_extension.py" "$SP_DIR"
         env:
           # Compiled ahead of time.  setup.py takes its CUDA branch when
           # TORCH_CUDA_ARCH_LIST is set even though no GPU is present, which is
           # what makes this buildable on GPU-less CI at all.
           FORCE_CUDA: "1"
           TORCH_CUDA_ARCH_LIST: ${{ cuda_arch_list }}
-          CUDA_HOME: ${{ "$BUILD_PREFIX/targets/x86_64-linux" }}
 
     requirements:
       build:
@@ -128,10 +149,22 @@ outputs:
         - pip
         - setuptools
         - wheel
-        - pytorch >=2.1.0
+        # The CUDA build specifically.  A CPU-built pytorch reports
+        # torch.version.cuda == None, and torch then discards CUDA_HOME however
+        # the environment is set -- so setup.py takes its no-extension branch
+        # and quietly produces a py3-none-any wheel.
+        - pytorch >=2.1.0 *cuda*
         - cuda-version ==${{ cuda_compiler_version }}
+        # torch's own CUDA headers include cusparse.h, cublas, cusolver and
+        # curand transitively, so building any extension against them needs the
+        # development packages present even though this kernel calls none of
+        # them directly.  SelectiveTracking's pixi.toml had already accumulated
+        # exactly this list.
         - cuda-cudart-dev
         - libcublas-dev
+        - libcusparse-dev
+        - libcusolver-dev
+        - libcurand-dev
       run:
         - python
         - ${{ pin_subpackage("groundingdino-py-base", exact=False) }}
