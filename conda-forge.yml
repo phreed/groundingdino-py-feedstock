@@ -1,8 +1,26 @@
 github:
   branch_name: main
   tooling_branch_name: main
+
 # The recipe is recipe/recipe.yaml, not recipe/meta.yaml.
 conda_build_tool: rattler-build
+
 conda_build:
   error_overlinking: true
 conda_forge_output_validation: true
+
+# Linux only.
+#
+# The compiled output exists for CUDA, which is a Linux story here: the recipe
+# builds the extension against the CUDA toolkit and has never been exercised on
+# Windows.  The other three outputs are `noarch`, so they build once and a
+# second platform would add nothing.
+#
+# Left to the defaults, the re-render put the CUDA matrix on win_64 and gave
+# linux `cuda_compiler_version: [None]` -- the exact inverse of what this recipe
+# wants.
+provider:
+  linux_64: azure
+  osx_64: false
+  osx_arm64: false
+  win_64: false

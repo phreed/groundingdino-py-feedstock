@@ -130,9 +130,13 @@ outputs:
 
     build:
       number: 0
-      string: cuda${{ cuda_compiler_version | replace(".", "") }}_py${{ python | replace(".", "") }}_h${{ hash }}_${{ build_number }}
+      string: cuda${{ cuda_compiler_version | default("None") | replace(".", "") }}_py${{ python | replace(".", "") }}_h${{ hash }}_${{ build_number }}
       skip:
-        - cuda_compiler_version == "None"
+        # `undefined` and `"None"` both mean "no CUDA on this platform", and they
+        # are not interchangeable: conda-forge's pinning omits the key entirely
+        # for osx, so testing only against "None" lets the output through and the
+        # template below fails during output discovery, before skip is consulted.
+        - cuda_compiler_version is undefined or cuda_compiler_version == "None"
         - match(python, "<3.10")
       script:
         content:
@@ -175,7 +179,7 @@ outputs:
         # the environment is set -- so setup.py takes its no-extension branch
         # and quietly produces a py3-none-any wheel.
         - pytorch >=2.1.0 *cuda*
-        - cuda-version ==${{ cuda_compiler_version }}
+        - cuda-version ==${{ cuda_compiler_version | default("None") }}
         # torch's own CUDA headers include cusparse.h, cublas, cusolver and
         # curand transitively, so building any extension against them needs the
         # development packages present even though this kernel calls none of
