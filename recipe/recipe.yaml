@@ -27,13 +27,14 @@ schema_version: 1
 context:
   name: groundingdino-py
   version: "0.4.1"
-  # Upstream's own tree, not the PyPI sdist.  The sdist ships no `csrc/`, so the
-  # CUDA extension cannot be built from it at all -- which is why the existing
-  # package is pure Python and why anyone wanting the compiled kernel has had to
-  # build it themselves.
+  # Upstream's own tree, not the PyPI sdist.
+  # The sdist ships no `csrc/`,
+  # so the CUDA extension cannot be built from it at all --
+  # which is why the primary package is pure Python
+  # and why anyone wanting the compiled kernel has had to build it themselves.
   #
-  # Upstream has cut no release since this commit; it is `main` at the time of
-  # writing, pinned by hash.
+  # Upstream has cut no release since this commit;
+  # it is `main` at the time of writing, pinned by hash.
   commit: 856dde20aee659246248e20734ef9ba5214f5e44
   # Architectures the extension is compiled for ahead of time.  conda-forge's
   # builders have no GPU, so nothing may depend on torch.cuda.is_available().
