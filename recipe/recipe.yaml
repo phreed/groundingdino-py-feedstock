@@ -83,6 +83,8 @@ source:
     #   0009  transformers: config.use_return_dict -> config.return_dict
     #   0012  python >= 3.12 raises SyntaxWarning, and will raise SyntaxError,
     #         for the \sum in a non-raw docstring
+    #   0013  transformers: get_extended_attention_mask's `device` argument,
+    #         which 0001 fills by mistake and v5 removes
     #
     # And 0011 records in requirements.txt the floors the above imply.  It
     # changes nothing for this feedstock, whose dependencies are declared below;
@@ -98,6 +100,11 @@ source:
     # not exist in the 4.x this recipe still allows, and the hunk of 0001 that
     # fixed the dtype argument to that same call would have to go with it.  Left
     # alone until the floor moves to transformers 5.
+    #
+    # 0013 is a second deprecation on that same call rather than a step toward
+    # the migration above.  It names the `dtype` argument that 0001 passes
+    # positionally into `device`; the method stays, only the stray argument
+    # goes.
     patches:
       - patches/0001-transformers-api-compat.patch
       - patches/0002-cuda-fp16-include.patch
@@ -111,6 +118,7 @@ source:
       - patches/0010-torchvision-interpolate-gate.patch
       - patches/0011-requirements-floors.patch
       - patches/0012-raw-docstring-escape.patch
+      - patches/0013-bertwarper-dtype-keyword.patch
 
 build:
   # The recipe-wide build number.  Both outputs restate it below, so all three
@@ -119,7 +127,9 @@ build:
   # 1: patches 0005-0012, which bring the source up to the dependency versions
   #    conda-forge now resolves.  0.4.1 build 0 is published and its contents
   #    differ, so the number has to move even though the version does not.
-  number: 1
+  # 2: patch 0013, the last of the deprecation warnings a run printed before
+  #    its first frame.
+  number: 2
 
 outputs:
 
@@ -132,7 +142,7 @@ outputs:
 
     build:
       noarch: python
-      number: 1
+      number: 2
       script:
         # No compiler and no TORCH_CUDA_ARCH_LIST in this environment, so
         # setup.py's get_extensions() takes its else branch and returns None.
@@ -190,7 +200,7 @@ outputs:
       version: ${{ version }}
 
     build:
-      number: 1
+      number: 2
       string: cuda${{ cuda_compiler_version | default("None") | replace(".", "") }}_py${{ python | replace(".", "") }}_h${{ hash }}_${{ build_number }}
       skip:
         # `undefined` and `"None"` both mean "no CUDA on this platform", and they
