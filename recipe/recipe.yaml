@@ -26,7 +26,7 @@ schema_version: 1
 
 context:
   name: groundingdino-py
-  version: "0.4.1"
+  version: "0.4.2"
   # Upstream's own tree, not the PyPI sdist.
   # The sdist ships no `csrc/`,
   # so the CUDA extension cannot be built from it at all --
@@ -129,7 +129,7 @@ build:
   #    differ, so the number has to move even though the version does not.
   # 2: patch 0013, the last of the deprecation warnings a run printed before
   #    its first frame.
-  number: 2
+  number: 0
 
 outputs:
 
@@ -142,7 +142,7 @@ outputs:
 
     build:
       noarch: python
-      number: 2
+      number: 0
       script:
         # No compiler and no TORCH_CUDA_ARCH_LIST in this environment, so
         # setup.py's get_extensions() takes its else branch and returns None.
@@ -200,7 +200,7 @@ outputs:
       version: ${{ version }}
 
     build:
-      number: 2
+      number: 0
       string: cuda${{ cuda_compiler_version | default("None") | replace(".", "") }}_py${{ python | replace(".", "") }}_h${{ hash }}_${{ build_number }}
       skip:
         # `undefined` and `"None"` both mean "no CUDA on this platform", and they
